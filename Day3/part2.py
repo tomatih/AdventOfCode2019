@@ -7,82 +7,101 @@ with open('Input.txt','r') as f:
 path1 = [ (x[0], int(x[1:])) for x in path1.split(',') ]
 path2 = [ (x[0], int(x[1:])) for x in path2.split(',') ]
 
-# create data holders
-# dict with a scheme line in a named direction from a to b on cordinate key
-horizontal = dict()
-vertical = dict()
+
 
 # initialise data
-current = [0,0]
+vertical = dict()
+horizontal = dict()
+
+# dict element structure
+# [ (start_coordinate, step_indicator), (end_cordinate, step_indicator) ]
+
+cursor = [0,0] # [x,y]
 steps=0
 
-# go through all instructions
+# cinstruct first cable data
 for direction, distance in path1:
-	# horizontal
+	# vertical movement
 	if direction in ['R','L']:
-		# create a line template and move cursor
+		# create data templates and move cursor
 		if direction == 'R':
-			tmp = ((current[0],steps),(current[0]+distance,-1))
-			current[0]+=distance
+			template = (
+				(cursor[0],steps),
+				(cursor[0]+distance,-1)
+			)
+			cursor[0]+=distance
 		else:
-			tmp = ((current[0]-distance,-1),(current[0],steps))
-			current[0]-=distance
+			template = (
+				(cursor[0]-distance,-1),
+				(cursor[0],steps)
+			)
+			cursor[0]-=distance
+		# add steps
 		steps+=distance
-		# add line to memory
-		if current[1] in horizontal:
-			horizontal[current[1]].append(tmp)
+		# add to dict
+		if cursor[1] in horizontal:
+			horizontal[cursor[1]].append(template)
 		else:
-			horizontal[current[1]] = [tmp]
-	
-	# vertical
+			horizontal[cursor[1]] = [template]
+
+	# horizontal movement
 	if direction in ['U','D']:
-		# create a line template and move cursor
+		# create data templates and move cursor
 		if direction == 'U':
-			tmp = ((current[1],steps),(current[1]+distance,-1))
-			current[1]+=distance
+			template=(
+				(cursor[1],steps),
+				(cursor[1]+distance,-1)
+			)
+			cursor[1]+=distance
 		else:
-			tmp = ((current[1]-distance,-1),(current[1],steps))
-			current[1]-=distance
+			template=(
+				(cursor[1]-distance,-1),
+				(cursor[1],steps)
+			)
+			cursor[1]-=distance
+		# add steps
 		steps+=distance
-		# add line to memory
-		if current[0] in vertical:
-			vertical[current[0]].append(tmp)
+		# add to dict
+		if cursor[0] in vertical:
+			vertical[cursor[0]].append(template)
 		else:
-			vertical[current[0]] = [tmp]
+			vertical[cursor[0]] = [template]
 
 
-#initialise data
-current = [0,0]
-steps=0
-intersections=list()
 
+# second cable data clear
+cursor = [0,0]
+steps = 0
+out = list()
 
-# go through all instructions
-for direction, distance in path2:
-	# horizontal
+for direction,distance in path2:
+	# horizontal movement crossing vertical
 	if direction in ['R','L']:
 		for i in range(distance):
+			# movement
 			steps+=1
-			current[0]+=1
-			if current[0] in vertical:
-				for start, stop in vertical[current[0]]:
-					if current[0]< stop[0] and current[0]>start[0]:
-						#calculate
+			cursor[0]+= 1 if direction=='R' else -1
+			# collisons
+			if cursor[0] in vertical:
+				for start, stop in vertical[cursor[0]]:
+					if cursor[1] > start[0] and cursor[1] < stop[0]:
+						# 2nd cable in steps
 						start_point = start if start[1]!=-1 else stop
-						print(start_point[1],)
-		
-	
-	# vertical
+						out.append(start_point[1]+abs(cursor[1]-start_point[0])+steps)
+
+
+	# vertical movement crossing horizontal
 	if direction in ['U','D']:
 		for i in range(distance):
+			# movement
 			steps+=1
-			current[1]+=1
-			if current[1] in horizontal:
-				for start, stop in horizontal[current[1]]:
-					if current[1]< stop[0] and current[1]>start[0]:
-						#calculate
+			cursor[1]+= 1 if direction=='U' else -1
+			# collisions
+			if cursor[1] in horizontal:
+				for start, stop in horizontal[cursor[1]]:
+					if cursor[0] > start[0] and cursor[0] < stop[0]:
+						# 2nd cable in steps
 						start_point = start if start[1]!=-1 else stop
-						print(start_point[1],abs(current[1]-start_point[1]))
-						
+						out.append(start_point[1]+abs(cursor[0]-start_point[0])+steps)
 
-print(intersections)
+print(min(out))
