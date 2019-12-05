@@ -61,7 +61,7 @@ while 1:
 		a = data[i+1] if param_modes[-1]=='1' else data[data[i+1]]
 		b = data[i+2] if param_modes[-2]=='1' else data[data[i+2]]
 		if param_modes[0] == '0':
-			data[data[i+3]] = i if a<b else 0
+			data[data[i+3]] = 1 if a<b else 0
 		else:
 			print('Scream for help')
 			quit()
